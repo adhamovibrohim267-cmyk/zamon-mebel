@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELITA Mebel</title>
+<style>
+:root{--m:#7a4a21;--m2:#a8672f;--bg:#faf6f1;--t:#2b2118}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--t)}
+header{background:var(--m);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center}
+header h1{font-size:22px;letter-spacing:2px}
+header a{color:#fff;text-decoration:none;background:var(--m2);padding:8px 12px;border-radius:8px;font-size:14px}
+.hero{padding:28px 16px;text-align:center;background:linear-gradient(135deg,#e9d8c4,#f6ece0)}
+.hero h2{font-size:24px;margin-bottom:8px}
+.hero p{color:#5b4a3a}
+.tools{padding:12px 16px;display:flex;gap:8px;flex-direction:column}
+.tools input{padding:12px;border:1px solid #d8c9b8;border-radius:10px;font-size:16px;width:100%}
+.cats{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.cats button{white-space:nowrap;border:1px solid var(--m2);background:#fff;color:var(--m);padding:8px 14px;border-radius:20px;font-size:14px;cursor:pointer}
+.cats button.on{background:var(--m);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:8px 16px 90px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+.card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;flex-direction:column}
+.img{height:130px;display:flex;align-items:center;justify-content:center;font-size:56px;background:#efe3d3}
+.img img{width:100%;height:100%;object-fit:cover}
+.info{padding:10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.info b{font-size:15px}
+.info small{color:#7b6a59;font-size:12px}
+.price{color:var(--m);font-weight:bold;font-size:16px;margin-top:auto}
+.card button{margin:0 10px 10px;padding:10px;border:0;background:var(--m2);color:#fff;border-radius:10px;font-size:14px;cursor:pointer}
+.empty{grid-column:1/-1;text-align:center;padding:30px;color:#7b6a59}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.modal.show{display:flex}
+.box{background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:18px;display:flex;flex-direction:column;gap:10px}
+.box input,.box textarea{padding:12px;border:1px solid #d8c9b8;border-radius:10px;font-size:16px;width:100%;font-family:inherit}
+.box .row{display:flex;gap:8px}
+.box .row button{flex:1;padding:12px;border:0;border-radius:10px;font-size:15px;color:#fff;cursor:pointer}
+.send{background:#229ed9}.call{background:#2e8b57}.close{background:#999}
+footer{background:var(--m);color:#fff;text-align:center;padding:18px 16px;font-size:14px;line-height:1.6}
+footer a{color:#fff}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ELITA MEBEL</h1>
+  <a id="callTop" href="#">📞 Qo'ng'iroq</a>
+</header>
+
+<section class="hero">
+  <h2>Sifatli mebel — o'z ustaxonamizdan</h2>
+  <p>Buyurtma asosida ham tayyorlaymiz. Yetkazib berish bor.</p>
+</section>
+
+<div class="tools">
+  <input id="q" type="search" placeholder="🔍 Mebel qidirish...">
+  <div class="cats" id="cats"></div>
+</div>
+
+<main class="grid" id="grid"></main>
+
+<footer>
+  <div>ELITA MEBEL ustaxonasi</div>
+  <div>📍 Manzil: shahar, ko'cha (o'zgartiring)</div>
+  <div>📞 <a id="callFoot" href="#"></a> · ✈️ <a id="tgFoot" href="#" target="_blank"></a></div>
+</footer>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <b id="mTitle">Buyurtma</b>
+    <input id="name" placeholder="Ismingiz">
+    <input id="phone" type="tel" placeholder="Telefon raqamingiz">
+    <textarea id="note" rows="2" placeholder="Izoh (rang, o'lcham...)"></textarea>
+    <div class="row">
+      <button class="send" onclick="sendTg()">Telegramga</button>
+      <button class="call" onclick="callNow()">Qo'ng'iroq</button>
+    </div>
+    <div class="row"><button class="close" onclick="closeM()">Yopish</button></div>
+  </div>
+</div>
+
+<script>
+/* ====== SHU YERNI O'ZGARTIRING ====== */
+const PHONE = "+998901234567";     // telefon raqamingiz
+const TG = "username";             // Telegram username (@siz)
+/* Mahsulot: n=nom, c=kategoriya, p=narx (so'm), d=tavsif, e=emoji, img=rasm (masalan "divan.jpg") */
+const products = [
+  {n:"Burchakli divan",c:"Divan",p:4500000,d:"Yumshoq, 3 kishilik",e:"🛋️",img:""},
+  {n:"To'g'ri divan",c:"Divan",p:3200000,d:"2 kishilik, ixcham",e:"🛋️",img:""},
+  {n:"Yotoqli divan",c:"Divan",p:3800000,d:"Yig'iladigan, qutili",e:"🛋️",img:""},
+  {n:"Kitob divan",c:"Divan",p:2900000,d:"Klassik mexanizm",e:"🛋️",img:""},
+  {n:"Kreslo",c:"Divan",p:1200000,d:"Zamonaviy, yumshoq",e:"🛋️",img:""},
+  {n:"Kreslo-krovat",c:"Divan",p:2100000,d:"Ochiladigan",e:"🛋️",img:""},
+  {n:"Pufik",c:"Divan",p:350000,d:"Yumshoq o'tirg'ich",e:"🛋️",img:""},
+  {n:"Chester divan",c:"Divan",p:6500000,d:"Klassik uslub",e:"🛋️",img:""},
+  {n:"Mehmonxona to'plami",c:"Divan",p:9800000,d:"Divan + 2 kreslo",e:"🛋️",img:""},
+  {n:"Kichik divan",c:"Divan",p:1900000,d:"Oshxona uchun",e:"🛋️",img:""},
+  {n:"Bir kishilik krovat",c:"Krovat",p:1800000,d:"90x200 sm",e:"🛏️",img:""},
+  {n:"Ikki kishilik krovat",c:"Krovat",p:3200000,d:"160x200 sm",e:"🛏️",img:""},
+  {n:"King size krovat",c:"Krovat",p:4100000,d:"180x200 sm",e:"🛏️",img:""},
+  {n:"Yumshoq boshli krovat",c:"Krovat",p:3600000,d:"Chiroyli, qulay",e:"🛏️",img:""},
+  {n:"Tortmali krovat",c:"Krovat",p:3900000,d:"Ichida joy bor",e:"🛏️",img:""},
+  {n:"Ikki qavatli krovat",c:"Krovat",p:2800000,d:"Bolalar uchun",e:"🛏️",img:""},
+  {n:"Bolalar krovati",c:"Krovat",p:2100000,d:"Himoya to'siqli",e:"🛏️",img:""},
+  {n:"Podium krovat",c:"Krovat",p:4800000,d:"Zamonaviy dizayn",e:"🛏️",img:""},
+  {n:"Temir krovat",c:"Krovat",p:1500000,d:"Mustahkam karkas",e:"🛏️",img:""},
+  {n:"Mexanizmli krovat",c:"Krovat",p:4400000,d:"Ko'tariluvchi, qutili",e:"🛏️",img:""},
+  {n:"Oshxona stoli",c:"Stol",p:1800000,d:"6 kishilik",e:"🍽️",img:""},
+  {n:"Yozuv stoli",c:"Stol",p:950000,d:"Ofis va maktab uchun",e:"🍽️",img:""},
+  {n:"Kompyuter stoli",c:"Stol",p:1100000,d:"Tokchali",e:"🍽️",img:""},
+  {n:"Jurnal stoli",c:"Stol",p:650000,d:"Mehmonxona uchun",e:"🍽️",img:""},
+  {n:"Yig'iladigan stol",c:"Stol",p:1400000,d:"Ixcham",e:"🍽️",img:""},
+  {n:"Burchakli yozuv stoli",c:"Stol",p:1500000,d:"L shaklida",e:"🍽️",img:""},
+  {n:"Yumaloq stol",c:"Stol",p:1600000,d:"4 kishilik",e:"🍽️",img:""},
+  {n:"Katta ovqat stoli",c:"Stol",p:2600000,d:"8 kishilik",e:"🍽️",img:""},
+  {n:"Tualet stoli",c:"Stol",p:1300000,d:"Ko'zguli",e:"🍽️",img:""},
+  {n:"Konsol stol",c:"Stol",p:800000,d:"Kirish zali uchun",e:"🍽️",img:""},
+  {n:"Kiyim shkafi 3 eshikli",c:"Shkaf",p:5200000,d:"Ko'zguli",e:"🚪",img:""},
+  {n:"Kiyim shkafi 2 eshikli",c:"Shkaf",p:3600000,d:"Ixcham",e:"🚪",img:""},
+  {n:"Kupe shkaf",c:"Shkaf",p:6800000,d:"Sirpanuvchi eshik",e:"🚪",img:""},
+  {n:"Burchakli shkaf",c:"Shkaf",p:5900000,d:"Joy tejaydi",e:"🚪",img:""},
+  {n:"Kitob shkafi",c:"Shkaf",p:1700000,d:"Ochiq tokchali",e:"🚪",img:""},
+  {n:"Poyabzal shkafi",c:"Shkaf",p:750000,d:"Tor, ko'p joyli",e:"🚪",img:""},
+  {n:"Servant",c:"Shkaf",p:3100000,d:"Idish-tovoq uchun",e:"🚪",img:""},
+  {n:"Kiyim ilgichli shkaf",c:"Shkaf",p:1250000,d:"Ochiq turi",e:"🚪",img:""},
+  {n:"Garderob",c:"Shkaf",p:8200000,d:"Katta, bo'limli",e:"🚪",img:""},
+  {n:"Ko'zguli shkaf",c:"Shkaf",p:4700000,d:"To'liq bo'yli ko'zgu",e:"🚪",img:""},
+  {n:"TV tumba 160 sm",c:"Tumba",p:1100000,d:"Tortmali",e:"📺",img:""},
+  {n:"TV tumba 200 sm",c:"Tumba",p:1500000,d:"Keng, yog'och",e:"📺",img:""},
+  {n:"Tortmali tumba",c:"Tumba",p:850000,d:"3 tortmali",e:"📺",img:""},
+  {n:"Krovat yoni tumbasi",c:"Tumba",p:400000,d:"Kichik, 1 tortmali",e:"📺",img:""},
+  {n:"Poyabzal tumbasi",c:"Tumba",p:600000,d:"Kirish uchun",e:"📺",img:""},
+  {n:"Komod 4 tortmali",c:"Tumba",p:1900000,d:"Kiyim uchun",e:"📺",img:""},
+  {n:"Komod 6 tortmali",c:"Tumba",p:2500000,d:"Katta",e:"📺",img:""},
+  {n:"Devor tokchasi",c:"Tumba",p:300000,d:"Osma",e:"📺",img:""},
+  {n:"Gul tumbasi",c:"Tumba",p:280000,d:"Dekorativ",e:"📺",img:""},
+  {n:"Hammom tumbasi",c:"Tumba",p:950000,d:"Namlikka chidamli",e:"📺",img:""},
+  {n:"Oshxona stuli",c:"Stul",p:250000,d:"Yog'och",e:"🪑",img:""},
+  {n:"Yumshoq stul",c:"Stul",p:380000,d:"Mato qoplamali",e:"🪑",img:""},
+  {n:"Bar stuli",c:"Stul",p:420000,d:"Baland",e:"🪑",img:""},
+  {n:"Ofis stuli",c:"Stul",p:900000,d:"G'ildirakli",e:"🪑",img:""},
+  {n:"Rahbar kreslosi",c:"Stul",p:1800000,d:"Charm, qulay",e:"🪑",img:""},
+  {n:"Taburet",c:"Stul",p:150000,d:"Kichik o'rindiq",e:"🪑",img:""},
+  {n:"Bolalar stuli",c:"Stul",p:220000,d:"Past, xavfsiz",e:"🪑",img:""},
+  {n:"Silkinuvchi kreslo",c:"Stul",p:1300000,d:"Dam olish uchun",e:"🪑",img:""},
+  {n:"Yog'och stul",c:"Stul",p:300000,d:"Klassik",e:"🪑",img:""},
+  {n:"Yig'iladigan stul",c:"Stul",p:180000,d:"Ixcham",e:"🪑",img:""},
+  {n:"Oshxona garniturasi 3 m",c:"Oshxona",p:7500000,d:"To'liq to'plam",e:"🍳",img:""},
+  {n:"Burchakli oshxona",c:"Oshxona",p:9200000,d:"Ko'p joyli",e:"🍳",img:""},
+  {n:"Osma shkaf",c:"Oshxona",p:1900000,d:"Oshxona uchun",e:"🍳",img:""},
+  {n:"Pastki shkaf",c:"Oshxona",p:2100000,d:"Tortmali",e:"🍳",img:""},
+  {n:"Oshxona oroli",c:"Oshxona",p:3300000,d:"Ish yuzasi bilan",e:"🍳",img:""},
+  {n:"Idish quritgichli shkaf",c:"Oshxona",p:950000,d:"Qulay",e:"🍳",img:""},
+  {n:"Oshxona burchagi",c:"Oshxona",p:3400000,d:"Divan + stol",e:"🍳",img:""},
+  {n:"Bar peshtaxta",c:"Oshxona",p:2400000,d:"Zamonaviy",e:"🍳",img:""},
+  {n:"Oshxona tokchasi",c:"Oshxona",p:500000,d:"Ziravorlar uchun",e:"🍳",img:""},
+  {n:"Pech tumbasi",c:"Oshxona",p:700000,d:"Mikroto'lqinli pech uchun",e:"🍳",img:""},
+  {n:"Bolalar beshigi",c:"Bolalar",p:1200000,d:"Yog'och",e:"🧸",img:""},
+  {n:"Bolalar shkafi",c:"Bolalar",p:2300000,d:"Rangli, 2 eshikli",e:"🧸",img:""},
+  {n:"Bolalar yozuv stoli",c:"Bolalar",p:1000000,d:"Sozlanadigan",e:"🧸",img:""},
+  {n:"Bolalar stol-stul to'plami",c:"Bolalar",p:850000,d:"Kichkintoylar uchun",e:"🧸",img:""},
+  {n:"O'yinchoq tokchasi",c:"Bolalar",p:650000,d:"Ochiq, past",e:"🧸",img:""},
+  {n:"Maktab stoli",c:"Bolalar",p:1250000,d:"Tokchali",e:"🧸",img:""},
+  {n:"Bolalar divanchasi",c:"Bolalar",p:1100000,d:"Yumshoq",e:"🧸",img:""},
+  {n:"Bolalar komodi",c:"Bolalar",p:1400000,d:"3 tortmali",e:"🧸",img:""},
+  {n:"Bolalar kitob tokchasi",c:"Bolalar",p:700000,d:"Devorga osma",e:"🧸",img:""},
+  {n:"O'smirlar xonasi to'plami",c:"Bolalar",p:8900000,d:"Krovat+stol+shkaf",e:"🧸",img:""},
+  {n:"Ofis stoli",c:"Ofis",p:1800000,d:"Oddiy, tortmali",e:"💼",img:""},
+  {n:"Rahbar stoli",c:"Ofis",p:4200000,d:"Katta, hashamatli",e:"💼",img:""},
+  {n:"Ofis shkafi",c:"Ofis",p:2600000,d:"Yopiq eshikli",e:"💼",img:""},
+  {n:"Hujjat shkafi",c:"Ofis",p:1700000,d:"Qulflanadigan",e:"💼",img:""},
+  {n:"Qabulxona peshtaxtasi",c:"Ofis",p:3500000,d:"Zamonaviy",e:"💼",img:""},
+  {n:"Majlis stoli",c:"Ofis",p:5800000,d:"10 kishilik",e:"💼",img:""},
+  {n:"Ofis divani",c:"Ofis",p:3900000,d:"Charm qoplamali",e:"💼",img:""},
+  {n:"Kitob javoni",c:"Ofis",p:2200000,d:"Shishali",e:"💼",img:""},
+  {n:"Kompyuter tumbasi",c:"Ofis",p:700000,d:"G'ildirakli",e:"💼",img:""},
+  {n:"Ofis tokchasi",c:"Ofis",p:900000,d:"Devorga osma",e:"💼",img:""},
+  {n:"Devor (stenka)",c:"Mehmonxona",p:6900000,d:"To'liq to'plam",e:"🏠",img:""},
+  {n:"TV stenka",c:"Mehmonxona",p:5400000,d:"Tokchali",e:"🏠",img:""},
+  {n:"Vitrina",c:"Mehmonxona",p:4300000,d:"Shishali",e:"🏠",img:""},
+  {n:"Bar shkafi",c:"Mehmonxona",p:3800000,d:"Ichimliklar uchun",e:"🏠",img:""},
+  {n:"Kiyim ilgich",c:"Mehmonxona",p:350000,d:"Kirish zali uchun",e:"🏠",img:""},
+  {n:"Dekor ko'zgu",c:"Mehmonxona",p:450000,d:"Yog'och ramkali",e:"🏠",img:""},
+  {n:"Transformer stol",c:"Mehmonxona",p:2000000,d:"Ochiladigan",e:"🏠",img:""},
+  {n:"Tokchalar to'plami",c:"Mehmonxona",p:900000,d:"3 dona",e:"🏠",img:""},
+  {n:"Gul tokchasi",c:"Mehmonxona",p:420000,d:"Ko'p qavatli",e:"🏠",img:""},
+  {n:"Kirish zali mebeli",c:"Mehmonxona",p:3300000,d:"Ilgich+tumba+ko'zgu",e:"🏠",img:""}
+];
+/* ==================================== */
+
+let cat="Hammasi", cur=null;
+const $=id=>document.getElementById(id);
+const fmt=n=>n.toLocaleString("ru-RU").replace(/,/g," ")+" so'm";
+
+$("callTop").href=$("callFoot").href="tel:"+PHONE;
+$("callFoot").textContent=PHONE;
+$("tgFoot").href="https://t.me/"+TG;
+$("tgFoot").textContent="@"+TG;
+
+function renderCats(){
+  const list=["Hammasi",...new Set(products.map(x=>x.c))];
+  $("cats").innerHTML=list.map(c=>`<button class="${c===cat?"on":""}" onclick="setCat('${c}')">${c}</button>`).join("");
+}
+function setCat(c){cat=c;renderCats();render();}
+function render(){
+  const q=$("q").value.toLowerCase().trim();
+  const list=products.map((x,i)=>({...x,i})).filter(x=>(cat==="Hammasi"||x.c===cat)&&x.n.toLowerCase().includes(q));
+  $("grid").innerHTML=list.length?list.map(x=>`
+    <div class="card">
+      <div class="img">${x.img?`<img src="${x.img}" alt="${x.n}">`:x.e}</div>
+      <div class="info"><b>${x.n}</b><small>${x.d}</small><div class="price">${fmt(x.p)}</div></div>
+      <button onclick="openM(${x.i})">Buyurtma berish</button>
+    </div>`).join(""):`<div class="empty">Hech narsa topilmadi</div>`;
+}
+function openM(i){cur=products[i];$("mTitle").textContent="Buyurtma: "+cur.n;$("modal").classList.add("show");}
+function closeM(){$("modal").classList.remove("show");}
+function sendTg(){
+  const t=`Salom! Buyurtma:\n${cur.n} — ${fmt(cur.p)}\nIsm: ${$("name").value}\nTel: ${$("phone").value}\nIzoh: ${$("note").value}`;
+  window.open("https://t.me/"+TG+"?text="+encodeURIComponent(t),"_blank");
+}
+function callNow(){location.href="tel:"+PHONE;}
+$("q").addEventListener("input",render);
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeM();});
+renderCats();render();
+</script>
+</body>
+</html>
